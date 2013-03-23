@@ -1,8 +1,8 @@
 var player = require('./index');
-var baudio = require('../baudio');
-var b = baudio({rate:8000, size: 256});
+var baudio = require('baudio');
+var b = baudio({rate:44100, size: 256});
 var fs = require('fs');
-file = fs.readFileSync('./hardmony.mid', 'binary');
+file = fs.readFileSync('./bach.mid', 'binary');
 midi = player(44100, file);
 notes = {};
 tau = Math.PI * 2;
@@ -13,22 +13,21 @@ b.push(function(time){
 		e.forEach(function(event){
 			if(event.subtype == 'noteOn'){
 				var f = 440 * Math.pow(2, (event.noteNumber - 49) / 12);
-//			console.log(event.channel, f)
-				notes[f] = {play: true, start: new Date().getTime()}
+				notes[event.noteNumber] = {play: true, start: new Date().getTime(), f: f}
 			}
-			if(event.subtype == 'noteOff'){
-				var f = 440 * Math.pow(2, (event.noteNumber - 49) / 12);
-				notes[f] = {play: false}
+			else if(event.subtype == 'noteOff'){
+				notes[event.noteNumber].play = false
 			}
 		})
 	};
 	
-	var sample = 0;
+	var sample = x = 0
 	for(n in notes){
-		if(notes[n].play) sample += Math.sin(tau * time * Number(n))
-		else if((new Date().getTime() - notes[n].start) < 1 / 8) sample += Math.sin(tau * time * Number(n))
+		if(notes[n].play) {x++; sample += Math.sin(tau * time * notes[n].f)}
+		else if((new Date().getTime() - notes[n].start) / 1000  < 2) {x++;sample += Math.sin(tau * time * notes[n].f)}
 	}
 	
-	return sample
+	return sample / Math.sqrt(x)
 })
 b.play();
+b.resume();

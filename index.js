@@ -42,8 +42,6 @@ module.exports = function(sampleRate, file){
 	
 	var ticks, events = [];
 	
-	console.log(TRACKS.length)
-
 	return function(time, trackNum){ // pass optional trackNum to return events for only that track
 		
 		ticks = time * tps;
@@ -77,7 +75,7 @@ module.exports = function(sampleRate, file){
 				track.shift()
 			}
 		}
-	  
+
 		return events		
 	
 	}
