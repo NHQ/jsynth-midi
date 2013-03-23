@@ -13,7 +13,7 @@ b.push(function(time){
 		e.forEach(function(event){
 			if(event.subtype == 'noteOn'){
 				var f = 440 * Math.pow(2, (event.noteNumber - 49) / 12);
-//			console.log(event.channel, f)
+			console.log(event.channel, f)
 				notes[f] = {play: true, start: new Date().getTime()}
 			}
 			if(event.subtype == 'noteOff'){
