@@ -15,7 +15,7 @@ module.exports = function(sampleRate, file){
 	
 	sampleRate = sampleRate || 44100
 	
-	var bpm = msPerBeat = ticksPerBeat = tps = samplesPerTick = TIME = 0
+	var bpm = msPerBeat = ticksPerBeat = tps = samplesPerTick = TIME = spt = 0
 
 	var tpb = header.ticksPerBeat
 	
@@ -24,6 +24,7 @@ module.exports = function(sampleRate, file){
 		msPerBeat = (bpm / 60) * 1e6
 		tps = (bpm * tpb) / 60
 		samplesPerTick = sampleRate / tps
+		spt = sampleRate / tps
 	}
 	
 	initClock();
@@ -39,46 +40,53 @@ module.exports = function(sampleRate, file){
 		});
 		TRACKS.push(t)
 	};
-	
+
 	var ticks, events = [];
 	
-	console.log(TRACKS.length)
-
+	var bucket = Math.ceil(spt);
+	
 	return function(time, trackNum){ // pass optional trackNum to return events for only that track
 		
-		ticks = time * tps;
-				
-		events.splice(0);
+		if(--bucket) return null;
 		
-		for(x in TRACKS){ 
-			var track = TRACKS[x], shift = 0;
-			for(e in track){
-				var event = track[e];
-				if (event.absolute <= ticks){
-					if(!(event.type == 'channel')){						
-						shift++
-						switch(event.subtype){
-							case 'setTempo':
-  							var bpm = 60000000 / event.microsecondsPerBeat;
+		else{
+			
+		  bucket = Math.ceil(spt);
+		
+			ticks = time * tps;
+				
+			events.splice(0);
+		
+			for(x in TRACKS){ 
+				var t = TRACKS[x], shift = 0;
+				for(e in t){
+					var event = t[e];
+					if (event.absolute < ticks){
+						if(!(event.type == 'channel')){						
+							shift++
+							if(event.subtype == 'setTempo'){
+								var bpm = 60000000 / event.microsecondsPerBeat;
 	  						initClock(bpm);
-								break;
+							}
+							t[e] = null
+						}
+						else{
+							shift++
+							events.push(event);	
+							t[e] = null
 						}
 					}
-					else{
-						shift++
-						events.push(event);	
+					else {
+						break;
 					}
+				};
+				for(; shift; shift--){
+					t.shift()
 				}
-				else {
-					break;
-				}
-			};
-			for(; shift; shift--){
-				track.shift()
 			}
-		}
-	  
-		return events		
+
+			return events		
 	
+		}
 	}
 }
