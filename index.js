@@ -1,7 +1,8 @@
 var parse = require('midi-file-parser');
+var Time = require('since-when');
 
 module.exports = function(sampleRate, file){
-
+var ttime = Time();
 	try{
 		var midi = parse(file);
 	}
@@ -34,33 +35,65 @@ module.exports = function(sampleRate, file){
 	for(x in tracks){ // get absolute times for events
 		var track = tracks[x];
 		var absolute = 0
-		var t = track.map(function(event){
+		tracks[x] = track.map(function(event){
 			event.absolute = absolute += event.deltaTime;
 			return event
-		});
-		TRACKS.push(t)
+		})
 	};
-
-	var ticks, events = [];
 	
-	var bucket = Math.ceil(spt);
+	var trackMaster = [], tt;
+	for(tt in tracks){
+		trackMaster[tt] = {
+			index : 0,
+			nextEvent : tracks[tt].length ? tracks[tt][0].absolute : Infinity,
+		}
+	};
+	
+	var ticks, events = [], tick = 0;
+	
+	var bucket = spt;
 	
 	return function(time, trackNum){ // pass optional trackNum to return events for only that track
-		
-		if(--bucket) return null;
+		bucket--
+		if(bucket>0) return null;
 		
 		else{
-			
-		  bucket = Math.ceil(spt);
-		
-			ticks = time * tps;
+		  bucket = spt;
+//			console.log(time, ttime.sinceBegin())
+			tick = Math.floor(time * tps);
 				
 			events.splice(0);
 		
-			for(x in TRACKS){ 
-				var t = TRACKS[x], shift = 0;
+			for(var i = 0; i < trackMaster.length; i++){
+				while(trackMaster[i].nextEvent<=tick){
+					events.push(tracks[i][trackMaster[i].index]);
+					trackMaster[i].index++;
+					trackMaster[i].nextEvent = tracks[i][trackMaster[i].index] ?
+																		 tracks[i][trackMaster[i].index].absolute :
+																		 Infinity
+				}
+			};
+			
+			events = events.map(function(evt){
+				if(evt.type == 'channel') return evt;
+				else {
+					if(evt.subtype == 'setTempo'){
+						bpm = 60000000 / evt.microsecondsPerBeat;
+						initClock(bpm);
+						return evt
+					}
+					else if(evt.subtype == 'timeSignature'){
+						return evt
+					}
+					else return false
+				}
+			}).filter(Boolean)
+			
+/*	
+			for(x in tracks){ 
+				var t = tracks[x], shift = 0;
 				for(e in t){
-					var event = t[e];
+					var event = t[e]
 					if (event.absolute < ticks){
 						if(!(event.type == 'channel')){						
 							shift++
@@ -77,6 +110,7 @@ module.exports = function(sampleRate, file){
 						}
 					}
 					else {
+//						console.log(ticks, event.absolute)
 						break;
 					}
 				};
@@ -84,6 +118,7 @@ module.exports = function(sampleRate, file){
 					t.shift()
 				}
 			}
+*/
 
 			return events		
 	
