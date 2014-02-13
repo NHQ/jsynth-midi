@@ -1,6 +1,6 @@
 {
   "name": "jsynth-midi",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "time based function for reading events from midi files",
   "main": "index.js",
   "scripts": {
@@ -15,9 +15,9 @@
     "jsynth"
   ],
   "author": "Johnny Honestly <mostmodernist@gmail.com> (http://johnnyscript.us/)",
-  "dependencies" : {
-    "since-when" : "",
-    "midi-file-parser" : ""
+  "dependencies": {
+    "since-when": "",
+    "midi-file-parser": ""
   },
   "license": "BSD-2-Clause",
   "bugs": {
