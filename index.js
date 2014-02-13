@@ -1,7 +1,7 @@
 var parse = require('midi-file-parser');
 var Time = require('since-when');
 
-module.exports = function(sampleRate, file){
+module.exports = function(file){
 var ttime = Time();
 	try{
 		var midi = parse(file);
@@ -14,7 +14,7 @@ var ttime = Time();
 		throw new Error('Midi format ' + header.formatType + ' is not supported.')
 	};
 	
-	sampleRate = sampleRate || 44100
+	var sampleRate = 44100 // deprecated
 	
 	var bpm = msPerBeat = ticksPerBeat = tps = samplesPerTick = TIME = spt = 0
 
@@ -55,7 +55,7 @@ var ttime = Time();
 	
 	return function(time, trackNum){ // pass optional trackNum to return events for only that track
 		bucket--
-		if(bucket>0) return null;
+		if(false || bucket>0) return null;
 		
 		else{
 		  bucket = spt;
@@ -80,7 +80,8 @@ var ttime = Time();
 					if(evt.subtype == 'setTempo'){
 						bpm = 60000000 / evt.microsecondsPerBeat;
 						initClock(bpm);
-						return evt
+            console.log(bpm, tps, tick)
+            return evt
 					}
 					else if(evt.subtype == 'timeSignature'){
 						return evt
