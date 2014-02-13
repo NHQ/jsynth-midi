@@ -15,6 +15,10 @@
     "jsynth"
   ],
   "author": "Johnny Honestly <mostmodernist@gmail.com> (http://johnnyscript.us/)",
+  "dependencies" : {
+    "since-when" : "",
+    "midi-file-parser" : ""
+  },
   "license": "BSD-2-Clause",
   "bugs": {
     "url": "https://github.com/NHQ/jsynth-midi/issues"
