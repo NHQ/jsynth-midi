@@ -1,6 +1,6 @@
 {
   "name": "jsynth-midi",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "time based function for reading events from midi files",
   "main": "index.js",
   "scripts": {
